@@ -8,15 +8,15 @@ from models import setup_db, Question, Category
 
 QUESTIONS_PER_PAGE = 10
 
-def paginate_categories(request, categories):
+def paginate_endpoints(request, selections):
     page = request.args.get('page', 1, type=int)
     start = (page - 1) * QUESTIONS_PER_PAGE
     end = start + QUESTIONS_PER_PAGE
 
-    categories = [category.format() for category in categories]
-    current_categories = categories[start:end]
+    selections = [selection.format() for selection in selections]
+    current_selections = selections[start:end]
 
-    return current_categories
+    return current_selections
 
 def create_app(test_config=None):
     app = Flask(__name__)
@@ -33,8 +33,11 @@ def create_app(test_config=None):
 
     @app.route('/categories')
     def get_categories():
-        categories = Category.query.all()
-        current_categories = paginate_categories(request, categories)
+        try:
+            categories = Category.query.all()
+            current_categories = paginate_endpoints(request, categories)
+        except BaseException:
+            abort(400)
 
         if len(current_categories) == 0:
             abort(404)
@@ -58,6 +61,28 @@ def create_app(test_config=None):
     ten questions per page and pagination at the bottom of the screen for three pages.
     Clicking on the page numbers should update the questions.
     """
+
+    @app.route('/questions')
+    def get_questions():
+        try:
+            questions = Question.query.all()
+            current_questions = paginate_endpoints(request, questions)
+        except BaseException:
+            abort(400)
+
+        if len(current_questions) == 0:
+            abort(404)
+
+        categories = Category.query.all()
+        categories = [category.format() for category in categories]
+
+        return jsonify({
+            "success": True,
+            "questions": current_questions,
+            "total_questions": len(questions),
+            "categories": categories,
+            "current_category": None
+        })
 
     """
     @TODO:
