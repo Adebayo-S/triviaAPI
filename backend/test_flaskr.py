@@ -15,7 +15,7 @@ class TriviaTestCase(unittest.TestCase):
         self.client = self.app.test_client
         self.database_name = "trivia_test"
         self.database_path = "postgresql://{}:{}@{}/{}".format(
-            "postgres", "Firstclass1.", "localhost:5432", self.database_name
+            "postgres", "XXXXXX", "localhost:5432", self.database_name
         )
         setup_db(self.app, self.database_path)
 
@@ -36,6 +36,9 @@ class TriviaTestCase(unittest.TestCase):
     """
 
     def test_get_categories(self):
+        """
+        Test get_categories endpoint to get the categories
+        """
         res = self.client().get('/categories')
         data = json.loads(res.data)
 
@@ -45,6 +48,9 @@ class TriviaTestCase(unittest.TestCase):
         self.assertTrue(data['categories'])
 
     def test_get_questions(self):
+        """
+        Test get_questions endpoint to get the questions
+        """
         res = self.client().get('/questions')
         data = json.loads(res.data)
 
@@ -55,6 +61,9 @@ class TriviaTestCase(unittest.TestCase):
         self.assertTrue(data['categories'])
 
     def test_delete_question(self):
+        """
+        Test delete_question endpoint to delete a question
+        """
         question = Question(
             question='did this test pass?',
             answer='yes',
@@ -70,6 +79,9 @@ class TriviaTestCase(unittest.TestCase):
         self.assertEqual(data['success'], True)
 
     def test_add_question(self):
+        """
+        Test add_question endpoint to add a question
+        """
         res = self.client().post('/questions', json={
             'question': 'did I add this question?',
             'answer': 'yes',
@@ -82,14 +94,35 @@ class TriviaTestCase(unittest.TestCase):
         self.assertEqual(data['success'], True)
 
     def test_search_questions(self):
+        """
+        Test search_questions endpoint to return results
+        for search questions
+        """
         url = '/questions/search'
-        res = self.client().post(url, json={'searchTerm': 'autobiography'})
+        res = self.client().post(url, json={
+            'searchTerm': 'autobiography'
+        })
         data = json.loads(res.data)
 
         self.assertEqual(res.status_code, 200)
         self.assertEqual(data['success'], True)
         self.assertTrue(data['questions'])
         self.assertTrue(data['total_questions'])
+
+    def test_get_quiz(self):
+        """
+        Test get_quiz endpoint to return quiz data
+        """
+        url = '/quizzes'
+        res = self.client().post(url, json={
+            'quiz_category': {"type": "Science", "id": "1"},
+            'previous_questions': []
+        })
+        data = json.loads(res.data)
+
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(data['success'], True)
+        self.assertTrue(data['question'])
 
 
 # Make the tests conveniently executable
