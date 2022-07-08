@@ -320,13 +320,6 @@ Request: `POST`
 
 > The request is made with the category id to fetch a random question from the given category that is not amongst the previous categories.
 
-```json
-data = {
-    "previous_questions": [],
-    "category_id": 1
-}
-```
-
 Example: ```curl -X POST http://localhost:5000/quizzes -d '{"previous_questions": [], "quiz_category": {"type": "Science", "id": "1"}}'```
 
 Response:
@@ -379,9 +372,9 @@ Response:
 
 ```json
 {
-    "success": False,
-    "error": <error code>,
-    "message": "<error message>"
+    "success": false,
+    "error": 400,
+    "message": "Bad request"
 }
 ```
 
