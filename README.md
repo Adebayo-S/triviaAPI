@@ -384,7 +384,6 @@ where:
 - 404: Resource not Found
 - 422: Unprocessable Entity
 
-
 ## Testing
 
 > Running tests for the projects.
