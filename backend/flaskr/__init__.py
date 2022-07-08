@@ -62,21 +62,20 @@ def create_app(test_config=None):
         try:
             questions = Question.query.all()
             current_questions = paginate_endpoints(request, questions)
+            categories = Category.query.all()
+            categories = [category.format() for category in categories]
         except BaseException:
             abort(400)
 
         if len(current_questions) == 0:
             abort(404)
 
-        categories = Category.query.all()
-        categories = [category.format() for category in categories]
 
         return jsonify({
             "success": True,
             "questions": current_questions,
             "total_questions": len(questions),
-            "categories": categories,
-            "current_category": None
+            "categories": categories
         })
 
     """
@@ -92,7 +91,7 @@ def create_app(test_config=None):
             question.delete()
             questions = Question.query.all()
         except BaseException:
-            abort(400)
+            abort(404)
 
         return jsonify({
             "success": True,
@@ -111,24 +110,24 @@ def create_app(test_config=None):
     """
     @app.route('/questions', methods=['POST'])
     def create_question():
-        body = request.get_json()
-
-        get_question = body.get('question')
-        get_answer = body.get('answer')
-        get_category = body.get('category')
-        get_difficulty = body.get('difficulty')
-
         try:
+            body = request.get_json()
+
+            get_question = body.get('question')
+            get_answer = body.get('answer')
+            get_category = body.get('category')
+            get_difficulty = body.get('difficulty')
+
             question = Question(
-                question = get_question,
-                answer =  get_answer,
-                category =  get_category,
-                difficulty = get_difficulty
+                question=get_question,
+                answer=get_answer,
+                category=get_category,
+                difficulty=get_difficulty
             )
             question.insert()
             questions = Question.query.all()
         except BaseException:
-            abort(400)
+            abort(422)
 
         return jsonify({
             "success": True,
@@ -184,7 +183,7 @@ def create_app(test_config=None):
             current_questions = paginate_endpoints(request, questions)
             category = Category.query.get(category_id)
         except BaseException:
-            abort(400)
+            abort(404)
 
         if len(current_questions) == 0 or category is None:
             abort(400)
@@ -195,8 +194,6 @@ def create_app(test_config=None):
             "total_questions": len(current_questions),
             "current_category": category.type
         })
-
-
 
     """
     POST endpoint to get questions to play the quiz.
@@ -209,13 +206,13 @@ def create_app(test_config=None):
     and shown whether they were correct or not.
     """
 
-    @app.route('/quiz', methods=['POST'])
+    @app.route('/quizzes', methods=['POST'])
     def get_quiz():
-        body = request.get_json()
-        previous_questions = body.get('previous_questions')
-        category = body.get('quiz_category')
-
         try:
+            body = request.get_json()
+            previous_questions = body.get('previous_questions')
+            category = body.get('quiz_category')
+
             if category['id'] == 0:
                 questions = Question.query.filter(
                     Question.id.notin_(previous_questions)
@@ -225,7 +222,8 @@ def create_app(test_config=None):
                     Question.category == category['id'],
                     Question.id.notin_(previous_questions)
                 ).all()
-            randm_question = random.choice(questions)
+            randm_question = random.choice(
+                questions) if len(questions) > 0 else None
         except BaseException:
             abort(422)
 
@@ -233,7 +231,6 @@ def create_app(test_config=None):
             "success": True,
             "question": randm_question.format()
         })
-
 
     """
     Error handlers for all expected errors
@@ -262,7 +259,5 @@ def create_app(test_config=None):
             "error": 400,
             "message": "bad request"
         }), 400
-
-
 
     return app
