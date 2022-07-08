@@ -138,9 +138,8 @@ def create_app(test_config=None):
         })
 
     """
-    @TODO:
-    Create a POST endpoint to get questions based on a search term.
-    It should return any questions for whom the search term
+    A POST endpoint to get questions based on a search term.
+    It returns any questions for whom the search term
     is a substring of the question.
 
     TEST: Search by any phrase. The questions list will update to include
@@ -170,17 +169,37 @@ def create_app(test_config=None):
         })
 
     """
-    @TODO:
-    Create a GET endpoint to get questions based on category.
+    A GET endpoint to get questions based on category.
 
     TEST: In the "List" tab / main screen, clicking on one of the
     categories in the left column will cause only questions of that
     category to be shown.
     """
+    @app.route('/categories/<int:category_id>/questions')
+    def get_questions_by_category_id(category_id):
+        try:
+            questions = Question.query.filter(
+                Question.category == category_id
+            ).all()
+            current_questions = paginate_endpoints(request, questions)
+            category = Category.query.get(category_id)
+        except BaseException:
+            abort(400)
+
+        if len(current_questions) == 0 or category is None:
+            abort(400)
+
+        return jsonify({
+            "success": True,
+            "questions": current_questions,
+            "total_questions": len(current_questions),
+            "current_category": category.type
+        })
+
+
 
     """
-    @TODO:
-    Create a POST endpoint to get questions to play the quiz.
+    POST endpoint to get questions to play the quiz.
     This endpoint should take category and previous question parameters
     and return a random questions within the given category,
     if provided, and that is not one of the previous questions.
@@ -190,10 +209,60 @@ def create_app(test_config=None):
     and shown whether they were correct or not.
     """
 
+    @app.route('/quiz', methods=['POST'])
+    def get_quiz():
+        body = request.get_json()
+        previous_questions = body.get('previous_questions')
+        category = body.get('quiz_category')
+
+        try:
+            if category['id'] == 0:
+                questions = Question.query.filter(
+                    Question.id.notin_(previous_questions)
+                ).all()
+            else:
+                questions = Question.query.filter(
+                    Question.category == category['id'],
+                    Question.id.notin_(previous_questions)
+                ).all()
+            randm_question = random.choice(questions)
+        except BaseException:
+            abort(422)
+
+        return jsonify({
+            "success": True,
+            "question": randm_question.format()
+        })
+
+
     """
-    @TODO:
-    Create error handlers for all expected errors
+    Error handlers for all expected errors
     including 404 and 422.
     """
+    @app.errorhandler(404)
+    def not_found(error):
+        return jsonify({
+            "success": False,
+            "error": 404,
+            "message": "resource not found"
+        }), 404
+
+    @app.errorhandler(422)
+    def unprocessable(error):
+        return jsonify({
+            "success": False,
+            "error": 422,
+            "message": "unprocessable"
+        }), 422
+
+    @app.errorhandler(400)
+    def bad_request(error):
+        return jsonify({
+            "success": False,
+            "error": 400,
+            "message": "bad request"
+        }), 400
+
+
 
     return app
