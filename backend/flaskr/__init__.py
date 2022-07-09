@@ -70,7 +70,6 @@ def create_app(test_config=None):
         if len(current_questions) == 0:
             abort(404)
 
-
         return jsonify({
             "success": True,
             "questions": current_questions,
@@ -105,7 +104,8 @@ def create_app(test_config=None):
     category, and difficulty score.
 
     When you submit a question on the "Add" tab,
-    the form will clear and the question will appear at the end of the last page
+    the form will clear and the question will appear
+    at the end of the last page
     of the questions list in the "List" tab.
     """
     @app.route('/questions', methods=['POST'])
