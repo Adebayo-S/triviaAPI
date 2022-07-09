@@ -127,7 +127,7 @@ def create_app(test_config=None):
             question.insert()
             questions = Question.query.all()
         except BaseException:
-            abort(422)
+            abort(400)
 
         return jsonify({
             "success": True,
@@ -259,5 +259,13 @@ def create_app(test_config=None):
             "error": 400,
             "message": "bad request"
         }), 400
+
+    @app.errorhandler(500)
+    def server_error(error):
+        return jsonify({
+            "success": False,
+            "error": 500,
+            "message": "server error"
+        }), 500
 
     return app
