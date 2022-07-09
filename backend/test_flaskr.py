@@ -47,17 +47,6 @@ class TriviaTestCase(unittest.TestCase):
         self.assertTrue(data['total_categories'])
         self.assertTrue(data['categories'])
 
-    def test_404_sent_request_beyond_valid_page_for_categories(self):
-        """
-        Test 404 sent request beyond valid status code for categories
-        """
-        res = self.client().get('/categories?page=1000')
-        data = json.loads(res.data)
-
-        self.assertEqual(res.status_code, 404)
-        self.assertEqual(data['success'], False)
-        self.assertEqual(data['message'], 'resource not found')
-
     def test_get_questions(self):
         """
         Test get_questions endpoint to get the questions
@@ -81,6 +70,32 @@ class TriviaTestCase(unittest.TestCase):
         self.assertEqual(res.status_code, 404)
         self.assertEqual(data['success'], False)
         self.assertEqual(data['message'], 'resource not found')
+
+    def test_get_questions_by_category(self):
+        """
+        Test get_questions_by_category endpoint to return questions
+        for a category
+        """
+        url = '/categories/1/questions'
+        res = self.client().get(url)
+        data = json.loads(res.data)
+
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(data['success'], True)
+        self.assertTrue(data['questions'])
+        self.assertTrue(data['total_questions'])
+
+    def test_404_get_questions_by_category(self):
+        """
+        Test 404 get_questions_by_category endpoint
+        """
+        url = '/categories/1000/questions'
+        res = self.client().get(url)
+        data = json.loads(res.data)
+
+        self.assertEqual(res.status_code, 400)
+        self.assertEqual(data['success'], False)
+        self.assertEqual(data['message'], 'bad request')
 
     def test_delete_question(self):
         """
