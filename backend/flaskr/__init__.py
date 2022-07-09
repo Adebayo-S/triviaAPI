@@ -37,17 +37,20 @@ def create_app(test_config=None):
     def get_categories():
         try:
             categories = Category.query.all()
-            current_categories = paginate_endpoints(request, categories)
+            categories_dic = {}
+
+            for category in categories:
+                categories_dic[category.id] = category.type
         except BaseException:
             abort(400)
 
-        if len(current_categories) == 0:
+        if len(categories_dic) == 0:
             abort(404)
 
         return jsonify({
             "success": True,
-            "categories": current_categories,
-            "total_categories": len(current_categories)
+            "categories": categories_dic,
+            "total_categories": len(categories_dic)
         })
 
     """
@@ -63,7 +66,10 @@ def create_app(test_config=None):
             questions = Question.query.all()
             current_questions = paginate_endpoints(request, questions)
             categories = Category.query.all()
-            categories = [category.format() for category in categories]
+            categories_dic = {}
+
+            for category in categories:
+                categories_dic[category.id] = category.type
         except BaseException:
             abort(400)
 
@@ -74,7 +80,7 @@ def create_app(test_config=None):
             "success": True,
             "questions": current_questions,
             "total_questions": len(questions),
-            "categories": categories
+            "categories": categories_dic
         })
 
     """
